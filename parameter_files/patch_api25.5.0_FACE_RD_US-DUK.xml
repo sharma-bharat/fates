@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<all>
+  <notes>This parameter dataset was created by Anthony Walker walkerap@ornl.gov, initially based on the patch created by Ryan Knox rgknox@lbl.gov. Please contact if using in published work.</notes> 
+  <base_file>fates_params_api25.5.0_FACE_RD.cdl</base_file>
+  <new_file>fates_params_api25.5.0_FACE_RD_US-DUK.cdl</new_file>
+  <pft_trim_list>1</pft_trim_list>
+  <parameters>
+    <pft_group ids="1">
+    </pft_group>
+  </parameters>
+</all>

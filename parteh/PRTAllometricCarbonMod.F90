@@ -5,7 +5,7 @@ module PRTAllometricCarbonMod
    ! This module contains all of the specific functions and types for
    ! Plant Allocation and Reactive Transport Extensible Hypotheses (PARTEH)
    ! CARBON only, allometric growth hypothesis
-   ! 
+   !
    ! Adapted from code originally in ED, by Rosie Fisher and Paul Moorcroft
    ! This refactor written by : Ryan Knox Apr 2018
    !
@@ -41,11 +41,11 @@ module PRTAllometricCarbonMod
   use FatesConstantsMod   , only : r8 => fates_r8
   use FatesConstantsMod   , only : i4 => fates_int
   use FatesConstantsMod   , only : sec_per_day
-  use FatesConstantsMod   , only : mm_per_cm 
-  use FatesConstantsMod   , only : TRS_regeneration        
+  use FatesConstantsMod   , only : mm_per_cm
+  use FatesConstantsMod   , only : TRS_regeneration
   use FatesConstantsMod   , only : default_regeneration
   use FatesConstantsMod   , only : TRS_no_seedling_dyn
-  use FatesConstantsMod   , only : min_max_dbh_for_trees 
+  use FatesConstantsMod   , only : min_max_dbh_for_trees
   use FatesIntegratorsMod , only : RKF45
   use FatesIntegratorsMod , only : Euler
   use FatesConstantsMod   , only : calloc_abs_error
@@ -64,6 +64,8 @@ module PRTAllometricCarbonMod
   use FatesConstantsMod   , only : ihard_stress_decid
   use FatesConstantsMod   , only : isemi_stress_decid
 
+  !use clm_time_manager, only : get_curr_time_string
+
   implicit none
   private
 
@@ -75,13 +77,13 @@ module PRTAllometricCarbonMod
 
   integer, parameter :: leaf_c_id   = 1   ! Unique object index for leaf carbon
   integer, parameter :: fnrt_c_id   = 2   ! Unique object index for fine-root carbon
-  integer, parameter :: sapw_c_id   = 3   ! Unique object index for sapwood carbon 
+  integer, parameter :: sapw_c_id   = 3   ! Unique object index for sapwood carbon
   integer, parameter :: store_c_id  = 4   ! Unique object index for storage carbon
   integer, parameter :: repro_c_id  = 5   ! Unique object index for reproductive carbon
   integer, parameter :: struct_c_id = 6   ! Unique object index for structural carbon
   integer, parameter :: num_vars = 6      ! THIS MUST MATCH THE LARGEST INDEX ABOVE
-  
-  
+
+
   ! For this hypothesis, we integrate dbh along with the other 6. Since this
   ! is a boundary condition, we do not add it to the state array, but we do want
   ! to include it with the integrator array.
@@ -100,7 +102,7 @@ module PRTAllometricCarbonMod
 
   integer, public, parameter :: ac_bc_inout_id_dbh   = 1   ! Plant DBH
   integer, public, parameter :: ac_bc_inout_id_netdc = 2   ! Index for the net daily C input BC
-  
+
   integer, parameter         :: num_bc_inout         = 2   ! Number of in & output boundary conditions
 
 
@@ -113,7 +115,7 @@ module PRTAllometricCarbonMod
   integer, public, parameter :: ac_bc_in_id_efstem  = 7   ! "Elongation factor" (stem)
   integer, parameter         :: num_bc_in           = 7   ! Number of input boundary conditions
 
-  
+
   ! THere are no purely output boundary conditions
   integer, parameter         :: num_bc_out        = 0   ! Number of purely output boundary condtions
 
@@ -123,7 +125,7 @@ module PRTAllometricCarbonMod
   ! -------------------------------------------------------------------------------------
   integer, parameter         :: icd               = 1   ! Only 1 coordinate per variable
 
-  
+
   ! This is the maximum number of leaf age pools  (used for allocating scratch space)
   integer, parameter         :: max_nleafage  = 10
 
@@ -141,14 +143,14 @@ module PRTAllometricCarbonMod
      procedure :: FastPRT      => FastPRTAllometricCarbon
 
    end type callom_prt_vartypes
-   
+
    ! ------------------------------------------------------------------------------------
    !
    ! This next class is an extention of the base instance that maps state variables
    !      to the outside model.
    !
    ! ------------------------------------------------------------------------------------
-   
+
    character(len=*), parameter, private :: sourcefile = __FILE__
 
 
@@ -164,8 +166,8 @@ module PRTAllometricCarbonMod
 
 
    contains
-  
- 
+
+
   subroutine InitPRTGlobalAllometricCarbon()
 
      ! ----------------------------------------------------------------------------------
@@ -174,33 +176,33 @@ module PRTAllometricCarbonMod
      ! and species list, and the number of boundary conditions of each 3 types.
      !
      ! This is called very early on in the call sequence of the model, and should occur
-     ! before any plants start being initialized.  These mapping tables must 
+     ! before any plants start being initialized.  These mapping tables must
      ! exist before that happens.  This initialization only happens once on each
      ! machine, and the mapping will be read-only, and a global thing. This step
      ! is not initializing the data structures bound to the plants.
      !
      ! There are two mapping tables.  One mapping table is a 2d array organized
      ! by organ and species, that contains the variable index:
-     ! 
+     !
      ! prt_global%sp_organ_map
      !
      ! The other mapping table is similar, but it is a 1D array, a list of the organs.
      ! And each of these the in turn points to a list of the indices associated
      ! with that organ.  This is useful when you want to do lots of stuff to a specified
-     ! organ. 
-     ! 
+     ! organ.
+     !
      ! prt_global%organ_map
      !
      ! IMPORTANT NOTE:  Once this object is populated, we can use this to properly
      ! allocate the "prt_vartypes_type" objects that attached to each plant. That process
      ! is handled by generic functions, and does not need to be written in each hypothesis.
-     ! 
+     !
      ! -----------------------------------------------------------------------------------
 
      integer :: nleafage
 
      allocate(prt_global_ac)
-     
+
      ! The "state descriptor" object holds things like the names, the symbols, the units
      ! of each variable. By putting it in an object, we can loop through them when
      ! doing things like reading/writing history and restarts
@@ -208,19 +210,19 @@ module PRTAllometricCarbonMod
      allocate(prt_global_ac%state_descriptor(num_vars))
 
      prt_global_ac%hyp_name = 'Allometric Carbon Only'
-     
+
      prt_global_ac%hyp_id = prt_carbon_allom_hyp
 
      ! Set mapping tables to zero
      call prt_global_ac%ZeroGlobal()
 
-     
+
      ! The number of leaf age classes can be determined from the parameter file,
      ! notably the size of the leaf-longevity parameter's second dimension.
      ! This is the same value in FatesInterfaceMod.F90
 
      nleafage = size(prt_params%leaf_long,dim=2)
-     
+
      if(nleafage>max_nleafage) then
         write(fates_log(),*) 'The allometric carbon PARTEH hypothesis'
         write(fates_log(),*) 'sets a maximum number of leaf age classes'
@@ -240,7 +242,7 @@ module PRTAllometricCarbonMod
      call prt_global_ac%RegisterVarInGlobal(store_c_id,"Storage Carbon","store_c",store_organ,carbon12_element,icd)
      call prt_global_ac%RegisterVarInGlobal(struct_c_id,"Structural Carbon","struct_c",struct_organ,carbon12_element,icd)
      call prt_global_ac%RegisterVarInGlobal(repro_c_id,"Reproductive Carbon","repro_c",repro_organ,carbon12_element,icd)
-     
+
      ! Set some of the array sizes for input and output boundary conditions
      prt_global_ac%num_bc_in    = num_bc_in
      prt_global_ac%num_bc_out   = num_bc_out
@@ -255,7 +257,7 @@ module PRTAllometricCarbonMod
   end subroutine InitPRTGlobalAllometricCarbon
 
   ! =====================================================================================
-  
+
 
   subroutine DailyPRTAllometricCarbon(this,phase)
 
@@ -263,7 +265,7 @@ module PRTAllometricCarbonMod
     !
     ! This is the main routine that handles allocation associated with the 1st
     ! hypothesis;  carbon only, and growth governed by allometry
-    ! 
+    !
     ! This routine is explained in the technical documentation in detail.
     !
     ! Some points:
@@ -275,25 +277,25 @@ module PRTAllometricCarbonMod
     !    costs have already been paid, and therefore the "carbon_balance" boundary
     !    condition is the net carbon gained by the plant over the coarse of the day.
     !    Think of "daily integrated NPP".
-    ! 
-    ! 3) This routine will completely spend carbon_balance if it enters as a positive 
+    !
+    ! 3) This routine will completely spend carbon_balance if it enters as a positive
     !    value, or replace carbon balance (using storage) if it enters as a negative value.
-    !    
+    !
     ! 4) It is assumed that the ecosystem model calling this routine has ensured that
     !    the net amount of negative carbon is no greater than that which can be replaced
     !    by storage.  This routine will crash gracefully if that is not true.
     !
-    ! 5) Leaves and fine-roots are given top priority, but just to replace maintenance 
+    ! 5) Leaves and fine-roots are given top priority, but just to replace maintenance
     !    turnover. This can also draw from strorage.
-    ! 
-    ! 6) Storage is given next available carbon gain, either to push up to zero, 
+    !
+    ! 6) Storage is given next available carbon gain, either to push up to zero,
     !    or to use it to top off stores.
     !
     ! 7) Third priority is then given to leaves and fine-roots again, but can only use
     !    carbon gain. Also, this transfer will attempt to get pools up to allometry.
-    ! 
+    !
     ! 8) Fourth priority is to bring other live pools up to allometry, and then structure.
-    ! 
+    !
     ! 9) Finally, if carbon is yet still available, it will grow all pools out concurrently
     !    including some to reproduction.
     !
@@ -335,14 +337,14 @@ module PRTAllometricCarbonMod
     real(r8) :: struct_below_target   ! dead (structural) biomass below target amount [kgC]
     real(r8) :: total_below_target    ! total biomass below the allometric target [kgC]
 
-    real(r8) :: allocation_factor     ! allocation factor (relative to demand) to 
+    real(r8) :: allocation_factor     ! allocation factor (relative to demand) to
     ! reconstruct tissues
 
     real(r8) :: flux_adj              ! adjustment made to growth flux term to minimize error [kgC]
     real(r8) :: store_target_fraction ! ratio between storage and leaf biomass when on allometry [kgC]
 
     real(r8) :: leaf_c_demand         ! leaf carbon that is demanded to replace maintenance turnover [kgC]
-    real(r8) :: fnrt_c_demand         ! fineroot carbon that is demanded to replace 
+    real(r8) :: fnrt_c_demand         ! fineroot carbon that is demanded to replace
                                       ! maintenance turnover [kgC]
     real(r8) :: total_c_demand        ! total carbon that is demanded to replace maintenance turnover [kgC]
     logical  :: step_pass             ! Did the integration step pass?
@@ -354,11 +356,11 @@ module PRTAllometricCarbonMod
     real(r8) :: repro_c_flux          ! Transfer into reproduction at the final stage [kgC]
     real(r8) :: struct_c_flux         ! Transfer into structure at various stages [kgC]
 
-    real(r8),dimension(max_nleafage) :: leaf_c0 
+    real(r8),dimension(max_nleafage) :: leaf_c0
 
     ! Initial value of carbon used to determine net flux
     real(r8) :: fnrt_c0               ! during this routine
-    real(r8) :: sapw_c0               ! ""   
+    real(r8) :: sapw_c0               ! ""
     real(r8) :: store_c0              ! ""
     real(r8) :: repro_c0              ! ""
     real(r8) :: struct_c0             ! ""
@@ -383,7 +385,7 @@ module PRTAllometricCarbonMod
     integer  :: i_var                 ! index for iterating state variables
     integer  :: i_age                 ! index for iterating leaf ages
     integer  :: nleafage              ! number of leaf age classifications
-    integer  :: leaf_status           ! are leaves on (2) or off (1) 
+    integer  :: leaf_status           ! are leaves on (2) or off (1)
     real(r8) :: leaf_age_flux         ! carbon mass flux between leaf age classification pools
 
     real(r8) :: elongf_leaf           ! Leaf elongation factor
@@ -417,9 +419,10 @@ module PRTAllometricCarbonMod
     ! passed to the integrators
     ! add one because we pass crown damage also
     ! which is not a bc_in
-    
+
     real(r8) ::  intgr_params(num_bc_in)
 
+    character(len=256)   :: dateTimeString
 
     ! -----------------------------------------------------------------------------------
     ! 0.
@@ -446,7 +449,7 @@ module PRTAllometricCarbonMod
     ! 1/2. Use pointers and associations to create simpler names inside the sub-routine.
     !      MLO. Any reason to use associate for some variables and pointers for others?
     ! -----------------------------------------------------------------------------------
-    associate( & 
+    associate( &
          leaf_c   => this%variables(leaf_c_id)%val, &
          fnrt_c   => this%variables(fnrt_c_id)%val(icd), &
          sapw_c   => this%variables(sapw_c_id)%val(icd), &
@@ -467,15 +470,15 @@ module PRTAllometricCarbonMod
       ! transport flux "%net_alloc" at the end.
       ! -----------------------------------------------------------------------------------
 
-      leaf_c0(1:nleafage) = leaf_c(1:nleafage)  ! Set initial leaf carbon 
+      leaf_c0(1:nleafage) = leaf_c(1:nleafage)  ! Set initial leaf carbon
       fnrt_c0 = fnrt_c                          ! Set initial fine-root carbon
       sapw_c0 = sapw_c                          ! Set initial sapwood carbon
-      store_c0 = store_c                        ! Set initial storage carbon 
+      store_c0 = store_c                        ! Set initial storage carbon
       repro_c0 = repro_c                        ! Set initial reproductive carbon
       struct_c0 = struct_c                      ! Set initial structural carbon
 
       ! -----------------------------------------------------------------------------------
-      ! II. Calculate target size of the biomass compartment for a given dbh.   
+      ! II. Calculate target size of the biomass compartment for a given dbh.
       ! -----------------------------------------------------------------------------------
 
       ! Target sapwood biomass according to allometry and trimming [kgC]
@@ -484,7 +487,7 @@ module PRTAllometricCarbonMod
       ! Target total above ground biomass in woody/fibrous tissues  [kgC]
       call bagw_allom(dbh,ipft, crowndamage, elongf_stem, target_agw_c)
 
-      ! Target total below ground biomass in woody/fibrous tissues [kgC] 
+      ! Target total below ground biomass in woody/fibrous tissues [kgC]
       call bbgw_allom(dbh,ipft, elongf_stem, target_bgw_c)
 
       ! Target total dead (structrual) biomass [kgC]
@@ -502,9 +505,9 @@ module PRTAllometricCarbonMod
 
       ! -----------------------------------------------------------------------------------
       ! II 1/2. Update target biomass based on the leaf elongation factor and the abscission
-      !         fraction for each non-leaf tissue. Elongation factor is binary for 
-      !         cold-deciduous and original drought-deciduous, and always one for 
-      !         evergreens. In case the plant is shedding leaves, we impose that any 
+      !         fraction for each non-leaf tissue. Elongation factor is binary for
+      !         cold-deciduous and original drought-deciduous, and always one for
+      !         evergreens. In case the plant is shedding leaves, we impose that any
       !         positive carbon balance necessarily goes to storage, even if this causes
       !         storage to go above allometry.
       ! -----------------------------------------------------------------------------------
@@ -531,11 +534,11 @@ module PRTAllometricCarbonMod
          ! -----------------------------------------------------------------------------------
          ! III.  Prioritize some amount of carbon to replace leaf/root turnover
          !         Make sure it isn't a negative payment, and either pay what is available
-         !         or forcefully pay from storage. 
+         !         or forcefully pay from storage.
          ! MLO.  Added a few conditions to decide what to do in case plants are deciduous.
          !       Specifically, drought deciduous with leaves off should not replace fine
          !       roots. They will be in negative carbon balance, and unlike cold deciduous,
-         !       the turnover rates will be high during the dry season (turnover is 
+         !       the turnover rates will be high during the dry season (turnover is
          !       temperature-dependent, but not moisture-dependent).  Allocating carbon
          !       to high-maintanence tissues will drain the storage with little benefit for
          !       these plants.
@@ -583,6 +586,11 @@ module PRTAllometricCarbonMod
             carbon_balance    = carbon_balance - ( leaf_c_flux + fnrt_c_flux )
          end if
 
+         !call get_curr_time_string(dateTimeString)
+
+         !print*, 'sinkhole',trim(dateTimeString), leaf_c(iexp_leaf),leaf_c_flux,store_c,carbon_balance,leaf_c_demand,total_c_demand
+         print*, 'sinkhole','Phase1(iii)' , leaf_c(iexp_leaf),leaf_c_flux,store_c,carbon_balance,leaf_c_demand,total_c_demand,fnrt_c
+
          ! -----------------------------------------------------------------------------------
          ! IV. if carbon balance is negative, re-coup the losses from storage
          !       if it is positive, give some love to storage carbon
@@ -613,7 +621,7 @@ module PRTAllometricCarbonMod
          end if
 
       case (2)
-         
+
          ! -----------------------------------------------------------------------------------
          ! V.  If carbon is still available, prioritize some allocation to replace
          !        the rest of the leaf/fineroot deficit
@@ -641,11 +649,12 @@ module PRTAllometricCarbonMod
             fnrt_c            = fnrt_c + fnrt_c_flux
 
             carbon_balance    = carbon_balance - ( leaf_c_flux + fnrt_c_flux )
+            print*, 'sinkhole','Phase1(v)' , leaf_c(iexp_leaf),leaf_c_flux,store_c,carbon_balance,leaf_below_target,fnrt_c
 
          end if
 
          ! -----------------------------------------------------------------------------------
-         ! VI.  If carbon is still available, we try to push all live 
+         ! VI.  If carbon is still available, we try to push all live
          !        pools back towards allometry. But only upwards, if fusion happened
          !        to generate some pools above allometric target, don't reduce the pool,
          !        just ignore it until the rest of the plant grows to meet it.
@@ -677,6 +686,7 @@ module PRTAllometricCarbonMod
 
                carbon_balance    = carbon_balance - &
                     ( leaf_c_flux + fnrt_c_flux + sapw_c_flux + store_c_flux )
+               print*, 'sinkhole','Phase1(vi)' , leaf_c(iexp_leaf),leaf_c_flux,store_c,carbon_balance,leaf_below_target,fnrt_c
             end if
          end if
 
@@ -698,7 +708,7 @@ module PRTAllometricCarbonMod
             end if
 
          end if
-      
+
       case (3)
          ! -----------------------------------------------------------------------------------
          ! VII 1/2: If plant is semi-deciduous, there will be cases in which plant's carbon
@@ -777,7 +787,7 @@ module PRTAllometricCarbonMod
             ! may be larger than its target! We check
             ! this, and if true, then we flag that
             ! pool to be ignored. c_mask(i) = .false.
-            ! For grasses, since they don't grow very 
+            ! For grasses, since they don't grow very
             ! large and thus won't accumulate such large
             ! errors, we always mask as true.
 
@@ -939,6 +949,7 @@ module PRTAllometricCarbonMod
                      write(fates_log(),*) 'exiting'
                      call endrun(msg=errMsg(sourcefile, __LINE__))
                   end if
+                  print*, 'sinkhole','Phase1(viii)' , leaf_c(iexp_leaf),leaf_c_flux,store_c,carbon_balance,fnrt_c,grow_leaf, grow_fnrt
 
                end if if_step_pass
 
@@ -975,9 +986,9 @@ module PRTAllometricCarbonMod
 
     return
   end subroutine DailyPRTAllometricCarbon
-  
+
   ! =====================================================================================
-  
+
   function AllomCGrowthDeriv(c_pools,c_mask,cbalance,intgr_params) result(dCdx)
 
       ! ---------------------------------------------------------------------------------
@@ -986,7 +997,7 @@ module PRTAllometricCarbonMod
       ! off of allometry, and assumes that there are no other species (ie nutrients) that
       ! govern allocation.
       ! ---------------------------------------------------------------------------------
-      
+
       ! Arguments
       real(r8),intent(in), dimension(:) :: c_pools      ! Vector of carbon pools
                                                         ! dbh,leaf,root,sap,store,dead
@@ -994,14 +1005,14 @@ module PRTAllometricCarbonMod
                                                         ! some may be turned off
       real(r8),intent(in)               :: cbalance     ! The carbon balance of the
                                                         ! partial step (independant var)
-                                             
-      real(r8), intent(in),dimension(:) :: intgr_params  ! Generic Array used to pass 
+
+      real(r8), intent(in),dimension(:) :: intgr_params  ! Generic Array used to pass
                                                          ! parameters into this function
 
 
-      ! Return Value 
+      ! Return Value
       ! Change in carbon (each pool) per change in total allocatable carbon (kgC/kgC)
-      real(r8),dimension(lbound(c_pools,dim=1):ubound(c_pools,dim=1)) :: dCdx 
+      real(r8),dimension(lbound(c_pools,dim=1):ubound(c_pools,dim=1)) :: dCdx
 
       ! locals
       integer  :: ipft           ! PFT index
@@ -1037,7 +1048,7 @@ module PRTAllometricCarbonMod
                  cdead  => c_pools(struct_c_id), &
                  crepro => c_pools(repro_c_id), &    ! Unused (memoryless)
                  mask_dbh  => c_mask(dbh_id), &    ! Unused (dbh always grows)
-                 mask_leaf => c_mask(leaf_c_id), &  
+                 mask_leaf => c_mask(leaf_c_id), &
                  mask_fnrt => c_mask(fnrt_c_id), &
                  mask_sap  => c_mask(sapw_c_id), &
                  mask_store => c_mask(store_c_id), &
@@ -1065,7 +1076,7 @@ module PRTAllometricCarbonMod
         ! then we use FATES's default reproductive allocation.
         ! We designate a plant a shrub or grass if its dbh at maximum height
         ! is less than 15 cm
-        
+
         if ( regeneration_model == default_regeneration .or. &
              prt_params%allom_dbh_maxheight(ipft) < min_max_dbh_for_trees ) then
 
@@ -1090,13 +1101,13 @@ module PRTAllometricCarbonMod
            write(fates_log(),*) 'unknown seed allocation and regeneration model, exiting'
            write(fates_log(),*) 'regeneration_model: ',regeneration_model
            call endrun(msg=errMsg(sourcefile, __LINE__))
-        end if ! TRS switch 
+        end if ! TRS switch
 
         dCdx = 0.0_r8
 
         ct_dtotaldd = ct_ddeaddd
-        if (mask_leaf)  ct_dtotaldd = ct_dtotaldd + ct_dleafdd 
-        if (mask_fnrt) ct_dtotaldd = ct_dtotaldd + ct_dfnrtdd 
+        if (mask_leaf)  ct_dtotaldd = ct_dtotaldd + ct_dleafdd
+        if (mask_fnrt) ct_dtotaldd = ct_dtotaldd + ct_dfnrtdd
         if (mask_sap)   ct_dtotaldd = ct_dtotaldd + ct_dsapdd
         if (mask_store) ct_dtotaldd = ct_dtotaldd + ct_dstoredd
 
@@ -1116,37 +1127,37 @@ module PRTAllometricCarbonMod
 
         else
 
-           dCdx(struct_c_id) = (ct_ddeaddd/ct_dtotaldd)*(1.0_r8-repro_fraction)   
+           dCdx(struct_c_id) = (ct_ddeaddd/ct_dtotaldd)*(1.0_r8-repro_fraction)
            dCdx(dbh_id)   = (1.0_r8/ct_dtotaldd)*(1.0_r8-repro_fraction)
-        
+
            if (mask_leaf) then
               dCdx(leaf_c_id) = (ct_dleafdd/ct_dtotaldd)*(1.0_r8-repro_fraction)
            else
               dCdx(leaf_c_id) = 0.0_r8
            end if
-           
+
            if (mask_fnrt) then
               dCdx(fnrt_c_id) = (ct_dfnrtdd/ct_dtotaldd)*(1.0_r8-repro_fraction)
            else
               dCdx(fnrt_c_id) = 0.0_r8
            end if
-           
+
            if (mask_sap) then
               dCdx(sapw_c_id) = (ct_dsapdd/ct_dtotaldd)*(1.0_r8-repro_fraction)
            else
               dCdx(sapw_c_id) = 0.0_r8
            end if
-           
+
            if (mask_store) then
               dCdx(store_c_id) = (ct_dstoredd/ct_dtotaldd)*(1.0_r8-repro_fraction)
            else
               dCdx(store_c_id) = 0.0_r8
            end if
-           
+
            dCdx(repro_c_id) = repro_fraction
 
         end if
-        
+
       end associate
 
       return
@@ -1220,7 +1231,7 @@ module PRTAllometricCarbonMod
          grow_store  = ( ba_store  - bt_store  ) <= calloc_abs_error
          grow_struct = ( ba_struct - bt_struct ) <= calloc_abs_error
       else
-         ! If anything looks not fine, write a detailed report 
+         ! If anything looks not fine, write a detailed report
          write(fates_log(),fmt=fmth) '======'
          write(fates_log(),fmt=fmth) ' At least one tissue is not on-allometry at the growth step'
          write(fates_log(),fmt=fmth) '======'
@@ -1254,10 +1265,10 @@ module PRTAllometricCarbonMod
    ! =====================================================================================
 
    subroutine FastPRTAllometricCarbon(this)
-      
+
       implicit none
       class(callom_prt_vartypes) :: this     ! this class
-      
+
       ! This routine does nothing, because in the carbon only allometric RT model
       ! we currently don't have any fast-timestep processes
       ! Think of this as a stub.
@@ -1268,4 +1279,4 @@ module PRTAllometricCarbonMod
 
 
 end module PRTAllometricCarbonMod
-  
+

@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<all>
+  <notes>This parameter dataset was created by Bharat Sharma sharmabd@ornl.gov and Anthony Walker walkerap@ornl.gov, initially based on the patch creasted by Ryan Knox rgknox@lbl.gov. Please contact if using in published work. RK: The calibration uses the following datasets: ... </notes>
+  <base_file>fates_params_api25.5.0_default.cdl</base_file>
+  <new_file>fates_params_api25.5.0_FACE_ECA.cdl</new_file>
+  <pft_trim_list>2,6</pft_trim_list>
+  <parameters>
+    <pft_group ids="1,2">
+	  <!--1:needleleaf_evergreen_extratrop_tree; 2: broadleaf_colddecid_extratrop_tree -->
+	<!--nutrients-->
+	  <fates_leaf_vcmax25top>40,60</fates_leaf_vcmax25top>
+	  <fates_cnp_prescribed_nuptake>0,0</fates_cnp_prescribed_nuptake>
+	  <fates_cnp_prescribed_puptake>0,0</fates_cnp_prescribed_puptake>
+	  <fates_cnp_nfix1>0.0,0.0</fates_cnp_nfix1>
+      <fates_cnp_vmax_nh4>8e-08,8e-08</fates_cnp_vmax_nh4>
+	  <fates_cnp_vmax_no3>8e-08,8e-08</fates_cnp_vmax_no3>
+	  <fates_cnp_vmax_p>5e-10,5e-10</fates_cnp_vmax_p>
+	  <fates_cnp_eca_vmax_ptase>5e-09,5e-09</fates_cnp_eca_vmax_ptase>
+      <fates_cnp_turnover_nitr_retrans>0.25,0.25,0,0, 0.25,0.25,0,0</fates_cnp_turnover_nitr_retrans>
+      <fates_cnp_turnover_phos_retrans>0.25,0.25,0,0, 0.25,0.25,0,0</fates_cnp_turnover_phos_retrans>
+      <!-- OLD
+      <fates_stoich_nitr>0.029,0.024,1e-08,0.0047, 0.04,0.024,1e-08,0.0047</fates_stoich_nitr>
+	  <fates_stoich_phos>0.0029,0.0024,1e-09,0.00047, 0.004,0.0024,1e-09,0.00047</fates_stoich_phos>
+      -->
+
+      <!--new stoichiometry-->
+      <fates_stoich_nitr>0.0215,0.0173,0.0031,0.0020, 0.0326,0.0150,0.0028,0.0020</fates_stoich_nitr>
+      <fates_stoich_phos>0.00215,0.00173,0.00031,0.00020, 0.00326,0.00150,0.00028,0.00020</fates_stoich_phos>
+
+
+    <!--storage-->
+	  <fates_alloc_storage_cushion>5,5</fates_alloc_storage_cushion>
+	  <fates_cnp_nitr_store_ratio>1.5,1.5</fates_cnp_nitr_store_ratio>
+	  <fates_cnp_phos_store_ratio>1.5,1.5</fates_cnp_phos_store_ratio>
+	  <fates_cnp_store_ovrflw_frac>1,1</fates_cnp_store_ovrflw_frac>
+
+	<!--allocation & allometry-->
+	  <fates_leaf_slamax>0.0954,0.0954</fates_leaf_slamax>
+	  <fates_leaf_slatop>0.01995827,0.01995827</fates_leaf_slatop>
+      <fates_turnover_leaf>2,1</fates_turnover_leaf>
+	  <fates_allom_l2fr>0.5,0.5</fates_allom_l2fr>
+	  <fates_allom_la_per_sa_int>0.5,0.5</fates_allom_la_per_sa_int>
+	  <fates_allom_la_per_sa_slp>0.0,0.0</fates_allom_la_per_sa_slp>
+	  <fates_wood_density>0.51,0.4</fates_wood_density>
+	  <fates_allom_agb_frac>0.8,0.8</fates_allom_agb_frac>
+      <fates_recruit_seed_alloc>0.1,0.1</fates_recruit_seed_alloc>
+
+	  <fates_alloc_organ_priority>1,2,3,4, 1,2,3,4</fates_alloc_organ_priority>
+	  <fates_allom_lmode>3,3</fates_allom_lmode>
+	  <fates_allom_fmode>1,1</fates_allom_fmode>
+	  <fates_allom_amode>2,2</fates_allom_amode>
+	  <fates_allom_hmode>3,3</fates_allom_hmode>
+
+	  <fates_allom_agb1>0.156,0.133</fates_allom_agb1>
+	  <fates_allom_agb2>2.517,2.271</fates_allom_agb2>
+	  <fates_allom_agb3>-999.9,-999.9</fates_allom_agb3>
+	  <fates_allom_agb4>-999.9,-999.9</fates_allom_agb4>
+	  <fates_allom_d2h1>7.07,3.258</fates_allom_d2h1>
+	  <fates_allom_d2h2>0.347,0.609</fates_allom_d2h2>
+	  <fates_allom_d2h3>-999.9,-999.9</fates_allom_d2h3>
+	  <fates_allom_dbh_maxheight>200,200</fates_allom_dbh_maxheight>
+	  <fates_allom_d2bl1>0.1267,0.1267</fates_allom_d2bl1>
+	  <fates_allom_d2bl2>1.5234373,1.3998939</fates_allom_d2bl2>
+	  <fates_allom_d2bl3>0.55,0.55</fates_allom_d2bl3>
+	  <fates_allom_d2ca_coefficient_max>0.3693718,1.1553612</fates_allom_d2ca_coefficient_max>
+	  <fates_allom_d2ca_coefficient_min>0.3693718,1.1553612</fates_allom_d2ca_coefficient_min>
+
+	<!--recruitment, mortality-->
+	  <fates_recruit_seed_supplement>0.001,0.001</fates_recruit_seed_supplement>
+      <fates_mort_bmort>0.014,0.014</fates_mort_bmort>
+	  <fates_mort_scalar_cstarvation>0.6,0.6</fates_mort_scalar_cstarvation>
+    </pft_group>
+
+    <non_pft_group>
+    <!--canopy dynamics -->
+	  <fates_comp_excln>-1</fates_comp_excln>
+	  <fates_canopy_closure_thresh>0.8</fates_canopy_closure_thresh>
+	  <fates_mort_disturb_frac>0.75</fates_mort_disturb_frac>
+	 <fates_mort_understorey_death>0.55983</fates_mort_understorey_death>
+     </non_pft_group>
+  </parameters>
+</all>
